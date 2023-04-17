@@ -1,4 +1,4 @@
-from resources.AdpRequests import ApiConnector
+from resources.adp_requests import APIConnector
 import base64
 import time
 
@@ -41,11 +41,11 @@ key_file_path = r"path"
 certificate = (cert_file_path, key_file_path)
 
 # Create an instance of ApiConnector class
-connector = ApiConnector(certificate, str(base64_credentials))
+connector = APIConnector(certificate, str(base64_credentials))
 
 # Get a list of employees
 employees = get_list_of_employees(500)
 
 # Get a list of time cards
-time_cards = get_list_of_time_cards(500, main_associate_id, "YYYY-MM_DD")
+time_cards = get_list_of_time_cards(500, main_associate_id, "YYYY-MM-DD")
 

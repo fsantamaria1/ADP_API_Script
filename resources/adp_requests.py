@@ -4,7 +4,7 @@ import logging
 import time
 
 
-class UrlGenerator:
+class URLGenerator:
     """
        Helper class for generating URLs for ADP API calls.
        """
@@ -82,7 +82,7 @@ class UrlGenerator:
         return list_of_time_card_urls
 
 
-class ApiConnector:
+class APIConnector:
     """
         Class for connecting to the ADP API and retrieving data.
     """
@@ -137,43 +137,51 @@ class ApiConnector:
 
     def verify_token(self):
         if self.token is None or self.token_expiration is None or time.time() > self.token_expiration:
-            self.get_token()
+            try:
+                self.get_token()
+            except Exception as e:
+                logging.error(f"An error occurred while verifying token: {str(e)}")
 
     def get_time_cards(self, max_number_of_time_cards, main_associate_id, start_date):
         self.verify_token()
-        list_of_urls = UrlGenerator().generate_timecard_api_urls(max_number_of_time_cards,
+        list_of_urls = URLGenerator().generate_timecard_api_urls(max_number_of_time_cards,
                                                                  start_date,
                                                                  main_associate_id)
-        list_of_time_cards = []
-        headers = {
-            'Authorization': self.token,
-            'Accept-Encoding': 'gzip, deflate',
-            'Host': self.api_host,
-            'Connection': 'Keep-Alive',
-            'User-Agent': 'Apache-HttpClient/4.5.2(Java/1.8.0_112)',
-            'Accept': 'application/json',
-            'Cookie': 'BIGipServerp_dc1_mobile_sor_integratedezlm=3938124043.15395.0000; BIGipServerp_dc2_mobile_apache_sor=3013608203.5377.0000; BIGipServerp_mkplproxy-dc1=1633878283.20480.0000; BIGipServerp_mkplproxy-dc2=670892811.20480.0000; BIGipServerp_dc1_mobile_apache_sor=153042955.5377.0000; Cookie_1=value'
-        }
-        for time_card_url in list_of_urls:
-            with requests.request(
-                    "GET",
-                    url=time_card_url,
-                    headers=headers,
-                    data=self.payload,
-                    cert=self.certificate
-            ) as response:
+        try:
+            list_of_time_cards = []
+            headers = {
+                'Authorization': self.token,
+                'Accept-Encoding': 'gzip, deflate',
+                'Host': self.api_host,
+                'Connection': 'Keep-Alive',
+                'User-Agent': 'Apache-HttpClient/4.5.2(Java/1.8.0_112)',
+                'Accept': 'application/json',
+                'Cookie': 'BIGipServerp_dc1_mobile_sor_integratedezlm=3938124043.15395.0000; BIGipServerp_dc2_mobile_apache_sor=3013608203.5377.0000; BIGipServerp_mkplproxy-dc1=1633878283.20480.0000; BIGipServerp_mkplproxy-dc2=670892811.20480.0000; BIGipServerp_dc1_mobile_apache_sor=153042955.5377.0000; Cookie_1=value'
+            }
+            for time_card_url in list_of_urls:
+                with requests.request(
+                        "GET",
+                        url=time_card_url,
+                        headers=headers,
+                        data=self.payload,
+                        cert=self.certificate
+                ) as response:
 
-                if response.status_code != 200:
-                    logging.error(
-                        f"An error occurred while retrieving time cards from {time_card_url}. "
-                        f"Response code: {response.status_code}")
-                    raise
-                else:
-                    response_text = json.loads(response.text)
-                    complete_indicator = response_text.get("meta").get("completeIndicator")
-                    if complete_indicator:
-                        return list_of_time_cards
-                    list_of_time_cards.append(response_text)
+                    if response.status_code == 200:
+                        response_text = json.loads(response.text)
+                        complete_indicator = response_text.get("meta").get("completeIndicator")
+
+                        if complete_indicator:
+                            return list_of_time_cards
+
+                        list_of_time_cards.append(response_text)
+
+                    else:
+                        response.raise_for_status()
+
+        except Exception as e:
+            logging.error(f"An error occurred while retrieving time cards.\n Error: {str(e)}\n")
+            raise
 
     def get_employees(self, max_number_of_employees):
         """
@@ -189,7 +197,7 @@ class ApiConnector:
         self.verify_token()
 
         try:
-            list_of_urls = UrlGenerator().generate_employee_api_urls_(500)
+            list_of_urls = URLGenerator().generate_employee_api_urls_(max_number_of_employees)
             list_of_employees = []
             headers = {
                 'Authorization': self.token,
@@ -204,14 +212,19 @@ class ApiConnector:
                         cert=self.certificate
                 ) as response:
 
-                    if response.status_code == 204:
-                        break
-                    else:
+                    if response.status_code == 200:
                         response_text = json.loads(response.text)
                         list_of_employees.append(response_text)
+
+                    elif response.status_code == 204:
+                        break
+
+                    else:
+                        response.raise_for_status()
+
             return list_of_employees
 
-        except json.decoder.JSONDecodeError as e:
+        except Exception as e:
             logging.error(
-                f"An error occurred while retrieving employees.\n Error: {e}")
+                f"An error occurred while retrieving employees.\n Error: {str(e)}\n")
             raise
