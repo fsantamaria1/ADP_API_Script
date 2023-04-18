@@ -6,8 +6,8 @@ import time
 
 class URLGenerator:
     """
-       Helper class for generating URLs for ADP API calls.
-       """
+    Helper class for generating URLs for ADP API calls.
+    """
 
     def __init__(self):
 
@@ -16,34 +16,28 @@ class URLGenerator:
         self.employee_api_endpoint = "https://api.adp.com/hr/v2/workers"
 
     @staticmethod
-    def generate_api_url(api_endpoint, top, skip, args=None):
+    def generate_api_url(api_endpoint: str, top: int, skip: int, args=None):
         """
-                Generates an API URL with the specified parameters.
+         Generates an API URL with the specified parameters.
+        :param api_endpoint: The base URL for the API.
+        :param top: The number of records to retrieve.
+        :param skip: The number of records to skip.
+        :param args: Additional parameters for the API call.
+        :return: The complete URL for the API call.
+        """
 
-                Args:
-                    api_endpoint (str): The base URL for the API.
-                    top (int): The number of records to retrieve.
-                    skip (int): The number of records to skip.
-                    args (str): Additional parameters for the API call.
-
-                Returns:
-                    str: The complete URL for the API call.
-                """
         if args is not None:
             return f"{api_endpoint}/{args}$top={top}&$skip={skip}"
         else:
             return f"{api_endpoint}?$top={top}&$skip={skip}"
 
-    def generate_employee_api_urls_(self, max_number_of_records):
+    def generate_employee_api_urls_(self, max_number_of_records: int):
         """
-                Generates a list of URLs for retrieving employee data.
+        Generates a list of URLs for retrieving employee data.
+        :param max_number_of_records: The maximum number of records to retrieve.
+        :return: A list of URLs for retrieving employee data.
+        """
 
-                Args:
-                    max_number_of_records (int): The maximum number of records to retrieve.
-
-                Returns:
-                    list: A list of URLs for retrieving employee data.
-                """
         processed = 0
         top = 50
         skip = 0
@@ -55,18 +49,15 @@ class URLGenerator:
             processed += 50
         return list_of_employee_urls
 
-    def generate_timecard_api_urls(self, max_number_of_records, start_date, main_associate_id):
+    def generate_timecard_api_urls(self, max_number_of_records: int, start_date, main_associate_id: str):
         """
-                Generates a list of URLs for retrieving timecard data.
+        Generates a list of URLs for retrieving timecard data.
+        :param max_number_of_records: The maximum number of records to retrieve.
+        :param start_date: The start date for the timecard data.
+        :param main_associate_id: The ID of the associate id used to retrieve all the team time cards.
+        :return: A list of URLs for retrieving timecard data.
+        """
 
-                Args:
-                    max_number_of_records (int): The maximum number of records to retrieve.
-                    start_date (str): The start date for the timecard data.
-                    main_associate_id (str): The ID of the associate id used to retrieve all the team time cards.
-
-                Returns:
-                    list: A list of URLs for retrieving timecard data.
-                """
         processed = 0
         top = 25
         skip = 0
@@ -75,7 +66,6 @@ class URLGenerator:
         while processed <= max_number_of_records:
             time_card_url = self.generate_api_url(self.timecard_api_endpoint, top, skip, rest_of_url)
             time_card_url = f"{time_card_url}&$filter=timeCards/timePeriod/startDate eq '{start_date}'"
-            print(time_card_url)
             list_of_time_card_urls.append(time_card_url)
             skip += 25
             processed += 25
@@ -84,16 +74,16 @@ class URLGenerator:
 
 class APIConnector:
     """
-        Class for connecting to the ADP API and retrieving data.
+    Class for connecting to the ADP API and retrieving data.
     """
 
     def __init__(self, full_certificate: tuple[str, str], base_64_credentials: str):
-        """Initializes the class with the provided certificate.
-
-        Args:
-            full_certificate (tuple[str, str]): The certificate to use for the API requests.
-            base_64_credentials (str): The base64 encoded client id and secret for authentication.
         """
+        Initializes the class with the provided certificate.
+        :param full_certificate: The certificate to use for the API requests.
+        :param base_64_credentials: The base64 encoded client id and secret for authentication.
+        """
+
         self.certificate = full_certificate
         self.payload = {}
         self.files = {}
@@ -102,13 +92,12 @@ class APIConnector:
         self.base64_credentials = base_64_credentials
         self.token_api_endpoint = "https://accounts.adp.com/auth/oauth/v2/token?grant_type=client_credentials"
         self.api_host = "api.adp.com"
+        self.url_generator = URLGenerator()
 
     def get_token(self):
         """
-        Retrieves: a bearer token from the specified URL and returns it.
-
-        Raises:
-            requests.exceptions.RequestException: If an error occurs while making the request.
+        Retrieves a bearer token from the ADP API and returns it.
+        Raises: requests.exceptions.RequestException: If an error occurs while making the request.
 
         """
 
@@ -136,6 +125,9 @@ class APIConnector:
             raise
 
     def verify_token(self):
+        """
+            Verifies whether the token is active or not and generates a new token if it is not currently active
+        """
         if self.token is None or self.token_expiration is None or time.time() > self.token_expiration:
             try:
                 self.get_token()
@@ -143,10 +135,18 @@ class APIConnector:
                 logging.error(f"An error occurred while verifying token: {str(e)}")
 
     def get_time_cards(self, max_number_of_time_cards, main_associate_id, start_date):
+        """
+        Retrieves a list of time cards from the ADP API.
+
+        :param max_number_of_time_cards: The maximum number of time cards to retrieve.
+        :param main_associate_id: The associate ID of the main employee to retrieve their team time cards.
+        :param start_date: The pay period start date. It is always a Monday's date and in this format: YYYY_MM-DD
+        :return: A list of JSONs which contain time card information
+        """
         self.verify_token()
-        list_of_urls = URLGenerator().generate_timecard_api_urls(max_number_of_time_cards,
-                                                                 start_date,
-                                                                 main_associate_id)
+        list_of_urls = self.url_generator.generate_timecard_api_urls(max_number_of_time_cards,
+                                                                     start_date,
+                                                                     main_associate_id)
         try:
             list_of_time_cards = []
             headers = {
@@ -185,19 +185,15 @@ class APIConnector:
 
     def get_employees(self, max_number_of_employees):
         """
-                Retrieves a list of employees from the ADP API.
-
-                Args:
-                    max_number_of_employees (int): The maximum number of employees to retrieve.
-
-                Returns:
-                    list:  A list of employees in JSON format.
-                """
+        Retrieves a list of employees from the ADP API.
+        :param max_number_of_employees: The maximum number of employees to retrieve.
+        :return: A list of employees in JSON format.
+        """
 
         self.verify_token()
 
         try:
-            list_of_urls = URLGenerator().generate_employee_api_urls_(max_number_of_employees)
+            list_of_urls = self.url_generator.generate_employee_api_urls_(max_number_of_employees)
             list_of_employees = []
             headers = {
                 'Authorization': self.token,
