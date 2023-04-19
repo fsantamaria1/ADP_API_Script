@@ -6,12 +6,12 @@ import os
 
 
 def create_tables():
-    engine = get_engine('server', 'database', 'username', 'password')
+    engine = get_engine()
     Base.metadata.create_all(engine)
 
 
 def insert_data():
-    engine = get_engine('server', 'database', 'username', 'password')
+    engine = get_engine()
     session = get_session(engine)
     session.commit()
     session.close()
