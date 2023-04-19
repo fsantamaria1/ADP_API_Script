@@ -4,45 +4,53 @@ from sqlalchemy.ext.declarative import declarative_base
 from resources.config import Config
 
 
-def get_engine(server=None, database=None, username=None, password=None):
+class Database:
     """
-    Create an engine for a SQL Server database using the specified credentials.
-    If no arguments are passed, the function will use the default database config defined in the DATABASE_CONFIG dictionary.
-    :param server: The server's IP or hostname
-    :param database: The database with the required tables
-    :param username: The username that will be used to initialize the session
-    :param password: The password that will be used to initialize the session
-    :return: The SQL engine
-    """
+        A class that represents a database and provides methods to create an engine and a session.
+        """
+    def __init__(self):
+        self.engine = self.create_engine()
+        self.Session = sessionmaker(bind=self.engine)
 
-    if not server:
-        server = Config.SERVER
-    if not database:
-        database = Config.DATABASE
-    if not username:
-        username = Config.USERNAME
-    if not password:
-        password = Config.SECRET_KEY
-        
-    connection_url = f'DRIVER=ODBC Driver 17 for SQL Server;SERVER={server}; DATABASE={database}; UID={username}; PWD={password}'
-    engine = create_engine('mssql+pyodbc:///?odbc_connect=' + connection_url)
-    return engine
+        # Based used to define the SQLAlchemy models
+        self.Base = declarative_base()
 
+    @staticmethod
+    def create_engine(server=None, database=None, username=None, password=None):
+        """
+        Create an engine for a SQL Server database using the specified credentials.
+        If no arguments are passed, the function will use the default database config defined in the Config class.
 
-def get_session(engine):
-    """
-    Create a database session using the specified engine
-    :param engine: The SQL engine that will be used for the session
-    :return: THe database session
-    """
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    return session
+        :param server: The name of the database server to connect to.
+        :param database: The name of the database to connect to.
+        :param username: The username to use for authentication.
+        :param password: The password to use for authentication.
+        :return: A SQL engine.
+        """
+        if not server:
+            server = Config.SERVER
+        if not database:
+            database = Config.DATABASE
+        if not username:
+            username = Config.USERNAME
+        if not password:
+            password = Config.SECRET_KEY
 
+        connection_string = f'DRIVER=ODBC Driver 17 for SQL Server;SERVER={server}; DATABASE={database}; UID={username}; PWD={password}'
+        engine = create_engine('mssql+pyodbc:///?odbc_connect=' + connection_string)
+        return engine
 
-def close_session(session):
-    session.close()
+    def create_session(self):
+        """
+        Create a database session using the specified engine
+        :return: THe database session
+        """
+        session = self.Session()
+        return session
 
+    @staticmethod
+    def close_session(session):
+        session.close()
 
-# create declarative base
-Base = declarative_base()
+    def create_all_tables(self):
+        self.Base.metadata.create_all(self.engine)

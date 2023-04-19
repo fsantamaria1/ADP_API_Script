@@ -1,20 +1,31 @@
 from resources.adp_requests import APIConnector
 import base64
-from resources.database import get_engine, get_session, Base
 from dotenv import load_dotenv
 import os
+from resources.databaseClass import Database
+import logging
 
 
 def create_tables():
-    engine = get_engine()
-    Base.metadata.create_all(engine)
+    db = Database()
+    engine = db.create_engine()
+    db.Base.metadata.create_all(engine)
 
 
 def insert_data():
-    engine = get_engine()
-    session = get_session(engine)
-    session.commit()
-    session.close()
+    db = Database()
+    session = db.close_session()
+    try:
+        # TODO: insert data into SQLAlchemy object, add it to the session, and commit it
+        # data = TableModel("data here")
+        # session.add(data)
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        logging.error(f"An error occurred.\nError: {str(e)}\n")
+        raise
+    finally:
+        session.close()
 
 
 # TODO: Work on the create_table and insert_data functions
@@ -37,3 +48,6 @@ if __name__ == '__main__':
     employees = connector.get_employees("number_of_employees")
 
     time_cards = connector.get_time_cards("number_of_time_cards", os.environ.get('main_associate_id'), "YYYY-MM-DD")
+
+    # TODO: process employee and time cards before inserting the data into the database
+    # insert_data()

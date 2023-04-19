@@ -1,10 +1,13 @@
 from sqlalchemy import Column, Integer, String, Date, DateTime
-from resources.database import Base
+from resources.databaseClass import Database
+import os
+
+db = Database()
 
 
-class UnnormalizedEmployee(Base):
+class UnnormalizedEmployee(db.Base):
     __tablename__ = 'UnnormalizedEmployees'
-    __table_args__ = {'schema': 'AdpRecords'}
+    __table_args__ = {'schema': os.environ.get('schema')}
 
     associate_id = Column(String(20), primary_key=True, nullable=False, unique=True, index=True)
     worker_id = Column(String(20), unique=True, nullable=False)
@@ -15,9 +18,9 @@ class UnnormalizedEmployee(Base):
     ce_department_id = Column(String(30))
 
 
-class UnnormalizedTimecards(Base):
+class UnnormalizedTimecards(db.Base):
     __tablename__ = 'UnnormalizedTimecards'
-    __table_args__ = {'schema': 'AdpRecords'}
+    __table_args__ = {'schema': os.environ.get('schema')}
 
     timecard_id = Column(Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
     associate_id = Column(String(20))
@@ -28,4 +31,3 @@ class UnnormalizedTimecards(Base):
     clock_out = Column(DateTime(timezone=True))
     pay_code_name = Column(String(20))
     exception = Column(String(50))
-
