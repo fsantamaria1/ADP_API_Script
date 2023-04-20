@@ -2,7 +2,7 @@ from resources.adp_requests import APIConnector
 import base64
 from dotenv import load_dotenv
 import os
-from resources.databaseClass import Database
+from resources.newdatabase import Database
 import logging
 
 
@@ -14,7 +14,7 @@ def create_tables():
 
 def insert_data():
     db = Database()
-    session = db.close_session()
+    session = db.create_session()
     try:
         # TODO: insert data into SQLAlchemy object, add it to the session, and commit it
         # data = TableModel("data here")
@@ -45,9 +45,9 @@ if __name__ == '__main__':
     connector = APIConnector(certificate, base64_credentials)
 
     # Get some API responses
-    employees = connector.get_employees("number_of_employees")
+    employees = connector.get_employees()
 
-    time_cards = connector.get_time_cards("number_of_time_cards", os.environ.get('main_associate_id'), "YYYY-MM-DD")
+    time_cards = connector.get_time_cards(os.environ.get('main_associate_id'), "YYYY-MM-DD")
 
     # TODO: process employee and time cards before inserting the data into the database
     # insert_data()

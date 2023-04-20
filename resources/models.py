@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Date, DateTime
-from resources.databaseClass import Database
+from resources.newdatabase import Database
 import os
 
 db = Database()
