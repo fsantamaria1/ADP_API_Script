@@ -3,7 +3,9 @@ from dotenv import load_dotenv
 
 
 class Config:
-
+    """
+    Contains credentials and information used to connect to the MS SQL server
+    """
     # Load environment variables
     load_dotenv()
 
