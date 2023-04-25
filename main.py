@@ -2,8 +2,9 @@ from resources.adp_requests import APIConnector
 import base64
 from dotenv import load_dotenv
 import os
-from resources.newdatabase import Database
+from resources.database import Database
 import logging
+from resources.response_filter import ResponseFilter
 
 
 def create_tables():
@@ -12,14 +13,20 @@ def create_tables():
     db.Base.metadata.create_all(engine)
 
 
-def insert_data():
+def insert_data(data):
     db = Database()
     session = db.create_session()
     try:
         # TODO: insert data into SQLAlchemy object, add it to the session, and commit it
-        # data = TableModel("data here")
-        # session.add(data)
-        session.commit()
+
+        if type(data) == list:
+            for each_data in data:
+                session.add(each_data)
+            session.commit()
+        else:
+            session.add(data)
+            session.commit()
+
     except Exception as e:
         session.rollback()
         logging.error(f"An error occurred.\nError: {str(e)}\n")
@@ -45,9 +52,15 @@ if __name__ == '__main__':
     connector = APIConnector(certificate, base64_credentials)
 
     # Get some API responses
-    employees = connector.get_employees()
+    employees = connector.get_employees(500)
+    employee_data_list = ResponseFilter.get_employees(employees)
+    
+    insert_data(employee_data_list)
 
-    time_cards = connector.get_time_cards(os.environ.get('main_associate_id'), "YYYY-MM-DD")
+    time_cards = connector.get_time_cards(500, os.environ.get('main_associate_id'), "YYYY-MM-DD")
+    time_card_list = ResponseFilter.get_timecards(time_cards)
+
+    insert_data(time_card_list)
 
     # TODO: process employee and time cards before inserting the data into the database
     # insert_data()
