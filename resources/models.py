@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime, BOOLEAN
+from sqlalchemy import Column, Integer, String, Date, DateTime, Boolean
 from resources.database import Database
 import os
 
@@ -20,10 +20,9 @@ class UnnormalizedEmployee(db.Base):
     department_code = Column(String(10))
     department_description = Column(String(50))
     worker_status = Column(String(11))
-    is_active = Column(BOOLEAN())
+    is_active = Column(Boolean)
     ce_code = Column(String(10), index=True)
     ce_department_id = Column(String(15))
-
 
 
 class UnnormalizedTimecards(db.Base):
@@ -39,4 +38,4 @@ class UnnormalizedTimecards(db.Base):
     clock_out = Column(DateTime(timezone=True))
     pay_code_name = Column(String(20))
     processing_status_code = Column(String(20))
-    has_exception = Column(BOOLEAN())
+    has_exception = Column(Boolean)
