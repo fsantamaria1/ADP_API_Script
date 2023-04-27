@@ -11,11 +11,19 @@ class UnnormalizedEmployee(db.Base):
 
     associate_id = Column(String(20), primary_key=True, nullable=False, unique=True, index=True)
     worker_id = Column(String(20), unique=True, nullable=False)
-    first_name = Column(String(25))
-    last_name = Column(String(25))
+    payroll_name = Column(String(90))
+    first_name = Column(String(30))
+    last_name = Column(String(30))
+    middle_name = Column(String(30))
+    location_code = Column(String(10))
+    location_description = Column(String(50))
+    department_code = Column(String(10))
+    department_description = Column(String(50))
+    worker_status = Column(String(11))
     is_active = Column(BOOLEAN())
     ce_code = Column(String(10), index=True)
-    ce_department_id = Column(String(30))
+    ce_department_id = Column(String(15))
+
 
 
 class UnnormalizedTimecards(db.Base):

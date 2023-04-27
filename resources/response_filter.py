@@ -17,11 +17,13 @@ class Employee:
     dept_desc = ""
     ce_name = ""
     ce_dept = ""
+    worker_status = ""
     is_active = False
     termination_date = None
 
     def __init__(self, associate_oid, worker_id, payroll_name, first_name, last_name, middle_name, 
-                location_code, loc_desc, dept_code, dept_desc, ce_name, ce_dept, termination_date):
+                location_code, loc_desc, dept_code, dept_desc, ce_name, ce_dept,
+                worker_status, termination_date):
         self.associate_oid = associate_oid
         self.worker_id = worker_id
         self.payroll_name = payroll_name
@@ -34,6 +36,7 @@ class Employee:
         self.dept_desc = dept_desc
         self.ce_name = ce_name
         self.ce_dept = ce_dept
+        self.worker_status = worker_status
         if termination_date != "":
             self.termination_date = datetime.strptime(termination_date, "%Y-%m-%d")
             if self.termination_date > datetime.today() - timedelta(days = 15):
@@ -51,10 +54,12 @@ class Employee:
         return out_string
 
     def __UnnormalizedEmployee__(self) -> UnnormalizedEmployee:
-        return UnnormalizedEmployee(associate_id=self.associate_oid, worker_id=self.worker_id, 
-                                    first_name=self.first_name, last_name=self.last_name, 
-                                    is_active=self.is_active, ce_code=self.ce_name, 
-                                    ce_department_id=self.ce_dept)
+        return UnnormalizedEmployee(associate_id=self.associate_oid, worker_id=self.worker_id, payroll_name=self.payroll_name,
+                                    first_name=self.first_name, last_name=self.last_name, middle_name=self.middle_name,
+                                    location_code=self.location_code, location_description=self.loc_desc,
+                                    department_code=self.dept_code, department_description=self.dept_desc,
+                                    worker_status=self.worker_status, is_active=self.is_active,
+                                    ce_code=self.ce_name, ce_department_id=self.ce_dept)
 
 
 class TimeEntry:
@@ -171,6 +176,7 @@ class DataParser:
         ce_name = ""
         ce_dept = ""
         termination_date = ""
+        worker_status = ""
 
         # associate_id
         if "associateOID" in worker_dict:
@@ -197,6 +203,12 @@ class DataParser:
 
                 if "middleName" in legal_name_dict:
                     middle_name = legal_name_dict["middleName"]
+
+        # worker_status
+        if "workerStatus" in worker_dict:
+            if "statusCode" in worker_dict["workerStatus"]:
+                if "codeValue" in worker_dict["workerStatus"]["statusCode"]:
+                    worker_status = worker_dict["workerStatus"]["statusCode"]["codeValue"]
 
         # location_code, loc_desc, dept_code, dept_desc
         if "workAssignments" in worker_dict:
@@ -234,18 +246,13 @@ class DataParser:
                     elif string_field_name_code == "CE Department":
                         ce_dept = DataParser.get_string_field_value(string_field)
 
-        #if "workerStatus" in worker_dict:
-        #    if "statusCode" in worker_dict["workerStatus"]:
-        #        workerStatusCodeDict = worker_dict["workerStatus"]["statusCode"]
-        #        IsActive = DataParser.getIsActive(workerStatusCodeDict)
-
         # termination_date
         if "workerDates" in worker_dict:
             if "terminationDate" in worker_dict["workerDates"]:
                 termination_date = worker_dict["workerDates"]["terminationDate"]
 
         return Employee(associate_id, worker_id, payroll_name, first_name, last_name, middle_name, location_code, 
-                         loc_desc, dept_code, dept_desc, ce_name, ce_dept, termination_date)
+                         loc_desc, dept_code, dept_desc, ce_name, ce_dept, worker_status, termination_date)
 
     @staticmethod
     def get_location_code(location_name_code_dict: dict):
