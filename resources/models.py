@@ -5,7 +5,7 @@ import os
 db = Database()
 
 
-class UnnormalizedEmployee(db.Base):
+class UnnormalizedEmployees(db.Base):
     __tablename__ = 'UnnormalizedEmployees'
     __table_args__ = {'schema': os.environ.get('schema')}
 
