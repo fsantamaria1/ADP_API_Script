@@ -1,7 +1,7 @@
 from contextlib import redirect_stdout
 import json
 from datetime import date, datetime, timedelta, timezone
-from resources.models import UnnormalizedEmployee, UnnormalizedTimecards
+from resources.models import UnnormalizedEmployees, UnnormalizedTimecards
 
 
 class Employee:
@@ -53,13 +53,13 @@ class Employee:
             self.location_code, self.loc_desc, self.dept_code, self.dept_desc, self.ce_name, self.ce_dept, self.termination_date, self.is_active)
         return out_string
 
-    def __UnnormalizedEmployee__(self) -> UnnormalizedEmployee:
-        return UnnormalizedEmployee(associate_id=self.associate_oid, worker_id=self.worker_id, payroll_name=self.payroll_name,
+    def __UnnormalizedEmployees__(self) -> UnnormalizedEmployees:
+        return UnnormalizedEmployees(associate_id=self.associate_oid, worker_id=self.worker_id, payroll_name=self.payroll_name,
                                     first_name=self.first_name, last_name=self.last_name, middle_name=self.middle_name,
                                     location_code=self.location_code, location_description=self.loc_desc,
                                     department_code=self.dept_code, department_description=self.dept_desc,
                                     worker_status=self.worker_status, is_active=self.is_active,
-                                    ce_code=self.ce_name, ce_department_id=self.ce_dept)
+                                    ce_code=self.ce_name, ce_department=self.ce_dept)
 
 
 class TimeEntry:
@@ -126,7 +126,7 @@ class ResponseFilter:
         for worker_list in response_list:
             if "workers" in worker_list:
                 for each_worker in worker_list["workers"]:
-                    adp_worker_list.append(DataParser.filter_each_worker(each_worker).__UnnormalizedEmployee__())
+                    adp_worker_list.append(DataParser.filter_each_worker(each_worker).__UnnormalizedEmployees__())
 
         return adp_worker_list
                     
@@ -287,6 +287,8 @@ class DataParser:
     def get_dept_desc(organizational_units_dict: dict):
         if "longName" in organizational_units_dict:
             return organizational_units_dict["longName"]
+        elif "shortName" in organizational_units_dict:
+            return organizational_units_dict["shortName"]
         else:
             return ""
 

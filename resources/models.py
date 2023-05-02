@@ -22,20 +22,28 @@ class UnnormalizedEmployees(db.Base):
     worker_status = Column(String(11))
     is_active = Column(Boolean)
     ce_code = Column(String(10), index=True)
-    ce_department_id = Column(String(15))
+    ce_department = Column(String(15))
 
 
 class UnnormalizedTimecards(db.Base):
     __tablename__ = 'UnnormalizedTimecards'
     __table_args__ = {'schema': os.environ.get('schema')}
 
-    timecard_id = Column(Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
+    # Timecard data
+    timecard_id = Column(Integer)
     associate_id = Column(String(20))
-    timecard_date = Column(Date, nullable=False)
+    timecard_status_code = Column(String(20))
     pay_period_start = Column(Date)
     pay_period_end = Column(Date)
+    has_exceptions = Column(Boolean)
+
+    # Entry data
+    entry_id = Column(String(50))
+    entry_date = Column(Date, nullable=False)
     clock_in = Column(DateTime(timezone=True))
     clock_out = Column(DateTime(timezone=True))
+    entry_status_code = Column(String(25))
     pay_code_name = Column(String(20))
-    processing_status_code = Column(String(20))
-    has_exception = Column(Boolean)
+    time_duration = Column(String(50))
+
