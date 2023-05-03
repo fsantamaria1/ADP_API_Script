@@ -1,7 +1,7 @@
 from contextlib import redirect_stdout
 import json
 from datetime import date, datetime, timedelta, timezone
-from resources.models import UnnormalizedEmployee, UnnormalizedTimecards
+from resources.models import UnnormalizedEmployees, UnnormalizedTimecards
 
 
 class Employee:
@@ -53,13 +53,13 @@ class Employee:
             self.location_code, self.loc_desc, self.dept_code, self.dept_desc, self.ce_name, self.ce_dept, self.termination_date, self.is_active)
         return out_string
 
-    def __UnnormalizedEmployee__(self) -> UnnormalizedEmployee:
-        return UnnormalizedEmployee(associate_id=self.associate_oid, worker_id=self.worker_id, payroll_name=self.payroll_name,
+    def __UnnormalizedEmployees__(self) -> UnnormalizedEmployees:
+        return UnnormalizedEmployees(associate_id=self.associate_oid, worker_id=self.worker_id, payroll_name=self.payroll_name,
                                     first_name=self.first_name, last_name=self.last_name, middle_name=self.middle_name,
                                     location_code=self.location_code, location_description=self.loc_desc,
                                     department_code=self.dept_code, department_description=self.dept_desc,
                                     worker_status=self.worker_status, is_active=self.is_active,
-                                    ce_code=self.ce_name, ce_department_id=self.ce_dept)
+                                    ce_code=self.ce_name, ce_department=self.ce_dept)
 
 
 class TimeEntry:
@@ -81,7 +81,7 @@ class Timecard:
 #    def __init__(self, associate_id: str, timecard_date: date, pay_period_start: date, pay_period_end: date, 
 #                 clock_in: datetime, clock_out: datetime, pay_code_name: str, exception: list):
 
-    def __init__(self, timecard_id: int, associate_id: str, pay_period_start: date, pay_period_end: date, processing_status_code: str, has_exception: bool, time_entry: TimeEntry):
+    def __init__(self, timecard_id: str, associate_id: str, pay_period_start: date, pay_period_end: date, processing_status_code: str, has_exception: bool, time_entry: TimeEntry):
         self.timecard_id = timecard_id
         self.associate_id = associate_id
         self.pay_period_start = pay_period_start
@@ -114,7 +114,7 @@ class Timecard:
                                     timecard_status_code=self.processing_status_code,
                                     pay_period_start=self.pay_period_start,
                                     pay_period_end=self.pay_period_end,
-                                    has_exceptions=self.has_exceptions,
+                                    has_exceptions=self.has_exception,
                                     # Entry data
                                     entry_id=self.entry_id,
                                     entry_date=self.entry_date,
@@ -146,7 +146,7 @@ class ResponseFilter:
         for worker_list in response_list:
             if "workers" in worker_list:
                 for each_worker in worker_list["workers"]:
-                    adp_worker_list.append(DataParser.filter_each_worker(each_worker).__UnnormalizedEmployee__())
+                    adp_worker_list.append(DataParser.filter_each_worker(each_worker).__UnnormalizedEmployees__())
 
         return adp_worker_list
                     
@@ -363,7 +363,7 @@ class DataParser:
         timecard_model_list = []
 
         # The ingredients of a Timecard
-        timecard_id = 0
+        timecard_id = ""
         associate_id = ""
         processing_status_code = ""
         pay_period_start = date(2000, 1, 1)
