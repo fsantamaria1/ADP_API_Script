@@ -1,7 +1,7 @@
 from contextlib import redirect_stdout
 import json
 from datetime import date, datetime, timedelta, timezone
-from resources.models import UnnormalizedEmployees, UnnormalizedTimecards
+from resources.models import UnnormalizedEmployee, UnnormalizedTimecards
 
 
 class Employee:
@@ -53,25 +53,25 @@ class Employee:
             self.location_code, self.loc_desc, self.dept_code, self.dept_desc, self.ce_name, self.ce_dept, self.termination_date, self.is_active)
         return out_string
 
-    def __UnnormalizedEmployees__(self) -> UnnormalizedEmployees:
-        return UnnormalizedEmployees(associate_id=self.associate_oid, worker_id=self.worker_id, payroll_name=self.payroll_name,
+    def __UnnormalizedEmployee__(self) -> UnnormalizedEmployee:
+        return UnnormalizedEmployee(associate_id=self.associate_oid, worker_id=self.worker_id, payroll_name=self.payroll_name,
                                     first_name=self.first_name, last_name=self.last_name, middle_name=self.middle_name,
                                     location_code=self.location_code, location_description=self.loc_desc,
                                     department_code=self.dept_code, department_description=self.dept_desc,
                                     worker_status=self.worker_status, is_active=self.is_active,
-                                    ce_code=self.ce_name, ce_department=self.ce_dept)
+                                    ce_code=self.ce_name, ce_department_id=self.ce_dept)
 
 
 class TimeEntry:
 
-    def __init__(self, entry_id: str, entry_date: date, clock_in: datetime, clock_out: datetime, pay_code: str, status_code: str):
+    def __init__(self, entry_id: str, entry_date: date, clock_in: datetime, clock_out: datetime, pay_code: str, status_code: str, time_duration: str):
         self.entry_id = entry_id
         self.entry_date = entry_date
         self.clock_in = clock_in
         self.clock_out = clock_out
         self.pay_code = pay_code
         self.status_code = status_code
-        
+        self.time_duration = time_duration
 
 
 class Timecard:
@@ -88,8 +88,10 @@ class Timecard:
         self.pay_period_end = pay_period_end
         self.timecard_date = time_entry.entry_date
         self.entry_id = time_entry.entry_id
+        self.entry_date = time_entry.entry_date
         self.clock_in = time_entry.clock_in
         self.clock_out = time_entry.clock_out
+        self.time_duration = time_entry.time_duration
         self.pay_code_name = time_entry.pay_code
         self.entry_status_code = time_entry.status_code
         self.processing_status_code = processing_status_code
@@ -99,12 +101,30 @@ class Timecard:
     def __str__(self):
         return "{0},\t{1}\n   {2}  --  {3} \n\t {4}, {5}".format(self.associate_id, self.pay_code_name, self.clock_in.__str__(), self.clock_out.__str__(), self.entry_id, self.entry_status_code)
 
+    #def __UnnormalizedTimecards__(self) -> UnnormalizedTimecards:
+    #    return UnnormalizedTimecards(associate_id=self.associate_id, timecard_date=self.timecard_date.__str__(),
+    #                                 pay_period_start=self.pay_period_start.__str__(), pay_period_end=self.pay_period_end.__str__(),
+    #                                 clock_in=self.clock_in.astimezone(Timecard.eastern_time_zone), clock_out=self.clock_out.astimezone(Timecard.eastern_time_zone),
+    #                                 pay_code_name=self.pay_code_name, processing_status_code=self.processing_status_code,
+    #                                 has_exception=self.has_exception)
     def __UnnormalizedTimecards__(self) -> UnnormalizedTimecards:
-        return UnnormalizedTimecards(associate_id=self.associate_id, timecard_date=self.timecard_date.__str__(),
-                                     pay_period_start=self.pay_period_start.__str__(), pay_period_end=self.pay_period_end.__str__(),
-                                     clock_in=self.clock_in.astimezone(Timecard.eastern_time_zone), clock_out=self.clock_out.astimezone(Timecard.eastern_time_zone),
-                                     pay_code_name=self.pay_code_name, processing_status_code=self.processing_status_code,
-                                     has_exception=self.has_exception)
+        return UnnormalizedTimecards(# Timecard data
+                                    timecard_id=self.timecard_id,
+                                    associate_id=self.associate_id,
+                                    timecard_status_code=self.processing_status_code,
+                                    pay_period_start=self.pay_period_start,
+                                    pay_period_end=self.pay_period_end,
+                                    has_exceptions=self.has_exceptions,
+                                    # Entry data
+                                    entry_id=self.entry_id,
+                                    entry_date=self.entry_date,
+                                    clock_in=self.clock_in,
+                                    clock_out=self.clock_out,
+                                    entry_status_code=self.entry_status_code,
+                                    pay_code_name=self.pay_code_name,
+                                    time_duration=self.time_duration
+            )
+
 
 class ResponseFilter:
     """ 
@@ -126,7 +146,7 @@ class ResponseFilter:
         for worker_list in response_list:
             if "workers" in worker_list:
                 for each_worker in worker_list["workers"]:
-                    adp_worker_list.append(DataParser.filter_each_worker(each_worker).__UnnormalizedEmployees__())
+                    adp_worker_list.append(DataParser.filter_each_worker(each_worker).__UnnormalizedEmployee__())
 
         return adp_worker_list
                     
@@ -409,6 +429,7 @@ class DataParser:
         clock_out = datetime(2000, 1, 1)
         status_code = ""
         pay_code = ""
+        time_duration = ""
         
         # entry_id
         entry_id = time_entries_dict["entryID"]
@@ -432,13 +453,15 @@ class DataParser:
             if "codeValue" in time_entries_dict["entryStatusCode"].keys():
                 status_code = time_entries_dict["entryStatusCode"]["codeValue"]
 
-        # pay_code
+        # pay_code and time_duration
         # it"s inside a list. Things might get messy if people work on a vacation day.
         if "entryTotals" in time_entries_dict.keys():
             for entry_total in time_entries_dict["entryTotals"]:
                 if "payCode" in entry_total.keys():
                     if "codeValue" in entry_total["payCode"].keys():
                         pay_code = entry_total["payCode"]["codeValue"]
+                if "timeDuration" in entry_total.keys():
+                    time_duration = entry_total["timeDuration"]
 
         # exceptions
         #if "exceptions" in time_entries_dict.keys():
@@ -447,5 +470,5 @@ class DataParser:
         #            exceptions.append(each_exception["exceptionDescription"])
 
 
-        temp_time_entry = TimeEntry(entry_id, entry_date, clock_in, clock_out, pay_code, status_code)
+        temp_time_entry = TimeEntry(entry_id, entry_date, clock_in, clock_out, pay_code, status_code, time_duration)
         return temp_time_entry
