@@ -30,8 +30,9 @@ class UnnormalizedTimecards(db.Base):
     __table_args__ = {'schema': os.environ.get('schema')}
 
     id = Column(Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
+
     # Timecard data
-    timecard_id = Column(Integer)
+    timecard_id = Column(String(25), index=True)
     associate_id = Column(String(20))
     timecard_status_code = Column(String(20))
     pay_period_start = Column(Date)
