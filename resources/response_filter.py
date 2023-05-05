@@ -1,4 +1,3 @@
-from contextlib import redirect_stdout
 import json
 from datetime import date, datetime, timedelta, timezone
 from resources.models import UnnormalizedEmployees, UnnormalizedTimecards
@@ -78,9 +77,6 @@ class Timecard:
 
     eastern_time_zone = timezone(timedelta(hours=4), name="EDT")
 
-#    def __init__(self, associate_id: str, timecard_date: date, pay_period_start: date, pay_period_end: date, 
-#                 clock_in: datetime, clock_out: datetime, pay_code_name: str, exception: list):
-
     def __init__(self, timecard_id: str, associate_id: str, pay_period_start: date, pay_period_end: date, processing_status_code: str, has_exception: bool, time_entry: TimeEntry):
         self.timecard_id = timecard_id
         self.associate_id = associate_id
@@ -97,16 +93,10 @@ class Timecard:
         self.processing_status_code = processing_status_code
         self.has_exception = has_exception
 
-
+    # for debugging
     def __str__(self):
-        return "{0},\t{1}\n   {2}  --  {3} \n\t {4}, {5}".format(self.associate_id, self.pay_code_name, self.clock_in.__str__(), self.clock_out.__str__(), self.entry_id, self.entry_status_code)
+        return "{0},\t{1}\n   {2}  --  {3} \n\t {4}, {5}".format(self.associate_id, self.pay_code_name, self.clock_in.__str__(), self.clock_out.__str__(), self.entry_id, self.time_duration)
 
-    #def __UnnormalizedTimecards__(self) -> UnnormalizedTimecards:
-    #    return UnnormalizedTimecards(associate_id=self.associate_id, timecard_date=self.timecard_date.__str__(),
-    #                                 pay_period_start=self.pay_period_start.__str__(), pay_period_end=self.pay_period_end.__str__(),
-    #                                 clock_in=self.clock_in.astimezone(Timecard.eastern_time_zone), clock_out=self.clock_out.astimezone(Timecard.eastern_time_zone),
-    #                                 pay_code_name=self.pay_code_name, processing_status_code=self.processing_status_code,
-    #                                 has_exception=self.has_exception)
     def __UnnormalizedTimecards__(self) -> UnnormalizedTimecards:
         return UnnormalizedTimecards(# Timecard data
                                     timecard_id=self.timecard_id,
@@ -137,7 +127,6 @@ class ResponseFilter:
     def get_employees(response_list):
         """
         Returns a list of Unnormalized Employees
-
         response_list is a list of "workers" lists from an api response. 
         """
 
@@ -159,7 +148,6 @@ class ResponseFilter:
     def get_timecards(response_list):
         """
         Returns a list of Unnormalized Timecards
-
         response_list is a list of dictionaries containing the "teamTimeCards" list
         """
 
@@ -340,9 +328,7 @@ class DataParser:
     def create_timecard_list(response_timecard: dict):
         """
         Used internaly
-
         Filters a timecard dictionary to return a Timecard list
-
         response_timecard is a dictionary from the "teamTimeCard" list
         """
 
@@ -355,7 +341,6 @@ class DataParser:
     def filter_timecard(timecard_dict: dict):
         """
         Used internaly
-
         Filters the "timeCards" list within a single item of "teamTimeCards"
         Returns a list 
         """
@@ -398,13 +383,16 @@ class DataParser:
             for day_entry in timecard_dict["dayEntries"]:
                 if "timeEntries" in day_entry.keys():
                     for time_entry in day_entry["timeEntries"]:
-                        one_time_entry = DataParser.filter_time_entries(time_entry)
-                        temp_timecard = Timecard(timecard_id, associate_id, pay_period_start, pay_period_end, processing_status_code, has_exception, one_time_entry)
-                        print(temp_timecard)
-                        # Turn Timecard into db model
-                        timecard_model_list.append(
-                            temp_timecard.__UnnormalizedTimecards__()
-                            )
+                        # TimeEntry List
+                        time_entrys = DataParser.filter_time_entries(time_entry)
+
+                        for each_time_entry in time_entrys:
+                            temp_timecard = Timecard(timecard_id, associate_id, pay_period_start, pay_period_end, processing_status_code, has_exception, each_time_entry)
+
+                            # Turn Timecard into db model
+                            timecard_model_list.append(
+                                temp_timecard.__UnnormalizedTimecards__()
+                                )
                 else:
                     #no time entries
                     pass
@@ -419,10 +407,11 @@ class DataParser:
     def filter_time_entries(time_entries_dict: dict):
         """
         Used internaly
-
         Filters an item from "timeEntries"
-        Returns a timeEntry object
+        Returns a list of timeEntries
         """
+        time_entry_list = []
+
         entry_id = ""
         entry_date = date(2000, 1, 1)
         clock_in = datetime(2000, 1, 1)
@@ -463,12 +452,20 @@ class DataParser:
                 if "timeDuration" in entry_total.keys():
                     time_duration = entry_total["timeDuration"]
 
+                # Add each entry total as new TimeEntry
+                temp_time_entry = TimeEntry(entry_id, entry_date, clock_in, clock_out, pay_code, status_code, time_duration)
+                time_entry_list.append(temp_time_entry)
+
+        # No entry totals. Just in case. 
+        else:
+            temp_time_entry = TimeEntry(entry_id, entry_date, clock_in, clock_out, pay_code, status_code, time_duration)
+            time_entry_list.append(temp_time_entry)
+
         # exceptions
         #if "exceptions" in time_entries_dict.keys():
         #    for each_exception in time_entries_dict["exceptions"]:
         #        if "exceptionDescription" in each_exception.keys():
         #            exceptions.append(each_exception["exceptionDescription"])
 
-
-        temp_time_entry = TimeEntry(entry_id, entry_date, clock_in, clock_out, pay_code, status_code, time_duration)
-        return temp_time_entry
+        return time_entry_list
+        
