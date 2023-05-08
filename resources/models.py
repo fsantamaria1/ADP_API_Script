@@ -45,6 +45,6 @@ class UnnormalizedTimecards(db.Base):
     clock_in = Column(DateTime(timezone=True))
     clock_out = Column(DateTime(timezone=True))
     entry_status_code = Column(String(25))
-    pay_code_name = Column(String(20))
+    pay_code = Column(String(20))
     time_duration = Column(String(50))
 

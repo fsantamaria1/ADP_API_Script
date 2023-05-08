@@ -88,14 +88,14 @@ class Timecard:
         self.clock_in = time_entry.clock_in
         self.clock_out = time_entry.clock_out
         self.time_duration = time_entry.time_duration
-        self.pay_code_name = time_entry.pay_code
+        self.pay_code = time_entry.pay_code
         self.entry_status_code = time_entry.status_code
         self.processing_status_code = processing_status_code
         self.has_exception = has_exception
 
     # for debugging
     def __str__(self):
-        return "{0},\t{1}\n   {2}  --  {3} \n\t {4}, {5}".format(self.associate_id, self.pay_code_name, self.clock_in.__str__(), self.clock_out.__str__(), self.entry_id, self.time_duration)
+        return "{0},\t{1}\n   {2}  --  {3} \n\t {4}, {5}".format(self.associate_id, self.pay_code, self.clock_in.__str__(), self.clock_out.__str__(), self.entry_id, self.time_duration)
 
     def __UnnormalizedTimecards__(self) -> UnnormalizedTimecards:
         return UnnormalizedTimecards(# Timecard data
@@ -111,7 +111,7 @@ class Timecard:
                                     clock_in=self.clock_in,
                                     clock_out=self.clock_out,
                                     entry_status_code=self.entry_status_code,
-                                    pay_code_name=self.pay_code_name,
+                                    pay_code=self.pay_code,
                                     time_duration=self.time_duration
             )
 
