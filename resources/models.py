@@ -7,7 +7,7 @@ db = Database()
 
 class UnnormalizedEmployees(db.Base):
     __tablename__ = 'UnnormalizedEmployees'
-    __table_args__ = {'schema': os.environ.get('schema')}
+    __table_args__ = {'schema': os.environ.get('default_schema')}
 
     associate_id = Column(String(20), primary_key=True, nullable=False, unique=True, index=True)
     worker_id = Column(String(20), unique=True, nullable=False)
@@ -27,7 +27,7 @@ class UnnormalizedEmployees(db.Base):
 
 class UnnormalizedTimecards(db.Base):
     __tablename__ = 'UnnormalizedTimecards'
-    __table_args__ = {'schema': os.environ.get('schema')}
+    __table_args__ = {'schema': os.environ.get('default_schema')}
 
     id = Column(Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
 

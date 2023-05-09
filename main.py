@@ -38,3 +38,11 @@ if __name__ == '__main__':
     time_card_list = ResponseFilter.get_timecards(time_cards)
 
     insert_data(time_card_list)
+
+    # Call stored procedures to update dependent tables
+    call_stored_procedure(os.environ.get('timecard_schema'), os.environ.get('tc_procedure_1'))
+    call_stored_procedure(os.environ.get('timecard_schema'), os.environ.get('tc_procedure_2'))
+    call_stored_procedure(os.environ.get('timecard_schema'), os.environ.get('tc_procedure_3'))
+    call_stored_procedure(os.environ.get('timecard_schema'), os.environ.get('tc_procedure_4'))
+    call_stored_procedure(os.environ.get('timecard_schema'), os.environ.get('tc_procedure_5'))
+    call_stored_procedure(os.environ.get('timecard_schema'), os.environ.get('tc_procedure_6'))
