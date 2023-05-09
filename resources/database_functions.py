@@ -109,14 +109,11 @@ def call_stored_procedure(schema, procedure_name):
     Calls the specified stored procedure using the current database engine.
 
     :param schema: The name of the schema where the procedure is stored
-    :param procedure_name: The name of the stored procedure to call.
-    :return: The result of the stored procedure.
+    :param procedure_name: The name of the stored procedure to call
     """
     db = Database()
     session = db.create_session()
 
-    print(f"EXEC {procedure_name}")
-    result = session.execute(text(f"EXEC {schema}.{procedure_name}"))
+    session.execute(text(f"EXEC {schema}.{procedure_name}"))
     session.commit()
     db.close_session(session)
-    return result

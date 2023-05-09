@@ -28,21 +28,29 @@ if __name__ == '__main__':
     # Delete any existing records in the non-normalized employees table if it already existed
     delete_records(UnnormalizedEmployees)
 
-    # Get some API responses and insert the data into the database
+    # Delete any existing records in the non-normalized employees table if it already existed
+    delete_records(UnnormalizedEmployees)
+    delete_records(UnnormalizedTimecards)
+
+    # Get employee information and insert it into the Unnormalized table
     employees = connector.get_employees()
     employee_data_list = ResponseFilter.get_employees(employees)
-
     insert_data(employee_data_list)
+
+    # Call stored procedures to update dependent employee tables
+    call_stored_procedure(os.environ.get('adp_schema'), os.environ.get('emp_procedure_1'))
+    call_stored_procedure(os.environ.get('adp_schema'), os.environ.get('emp_procedure_2'))
+    call_stored_procedure(os.environ.get('adp_schema'), os.environ.get('emp_procedure_3'))
+    call_stored_procedure(os.environ.get('adp_schema'), os.environ.get('emp_procedure_4'))
 
     time_cards = connector.get_time_cards(os.environ.get('main_associate_id'), "YYYY-MM-DD")
     time_card_list = ResponseFilter.get_timecards(time_cards)
-
     insert_data(time_card_list)
 
     # Call stored procedures to update dependent tables
-    call_stored_procedure(os.environ.get('timecard_schema'), os.environ.get('tc_procedure_1'))
-    call_stored_procedure(os.environ.get('timecard_schema'), os.environ.get('tc_procedure_2'))
-    call_stored_procedure(os.environ.get('timecard_schema'), os.environ.get('tc_procedure_3'))
-    call_stored_procedure(os.environ.get('timecard_schema'), os.environ.get('tc_procedure_4'))
-    call_stored_procedure(os.environ.get('timecard_schema'), os.environ.get('tc_procedure_5'))
-    call_stored_procedure(os.environ.get('timecard_schema'), os.environ.get('tc_procedure_6'))
+    call_stored_procedure(os.environ.get('adp_schema'), os.environ.get('tc_procedure_1'))
+    call_stored_procedure(os.environ.get('adp_schema'), os.environ.get('tc_procedure_2'))
+    call_stored_procedure(os.environ.get('adp_schema'), os.environ.get('tc_procedure_3'))
+    call_stored_procedure(os.environ.get('adp_schema'), os.environ.get('tc_procedure_4'))
+    call_stored_procedure(os.environ.get('adp_schema'), os.environ.get('tc_procedure_5'))
+    call_stored_procedure(os.environ.get('adp_schema'), os.environ.get('tc_procedure_6'))
