@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, Date, DateTime, Boolean, Time, Interval
 from resources.database import Database
 import os
 
@@ -46,5 +46,5 @@ class UnnormalizedTimecards(db.Base):
     clock_out = Column(DateTime(timezone=True))
     entry_status_code = Column(String(25))
     pay_code = Column(String(20))
-    time_duration = Column(String(50))
+    time_duration = Column(Integer)
 

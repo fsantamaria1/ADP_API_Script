@@ -1,6 +1,7 @@
 import json
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone, time
 from resources.models import UnnormalizedEmployees, UnnormalizedTimecards
+import isodate
 
 
 class Employee:
@@ -63,7 +64,9 @@ class Employee:
 
 class TimeEntry:
 
-    def __init__(self, entry_id: str, entry_date: date, clock_in: datetime, clock_out: datetime, pay_code: str, status_code: str, time_duration: str):
+    # def __init__(self, entry_id: str, entry_date: date, clock_in: datetime, clock_out: datetime, pay_code: str, status_code: str, time_duration: str):
+    def __init__(self, entry_id: str, entry_date: date, clock_in: datetime, clock_out: datetime, pay_code: str, status_code: str, time_duration: int):
+
         self.entry_id = entry_id
         self.entry_date = entry_date
         self.clock_in = clock_in
@@ -418,7 +421,8 @@ class DataParser:
         clock_out = datetime(2000, 1, 1)
         status_code = ""
         pay_code = ""
-        time_duration = ""
+        # time_duration = "00:00:00"
+        time_duration = 0
         
         # entry_id
         entry_id = time_entries_dict["entryID"]
@@ -451,6 +455,9 @@ class DataParser:
                         pay_code = entry_total["payCode"]["codeValue"]
                 if "timeDuration" in entry_total.keys():
                     time_duration = entry_total["timeDuration"]
+                    time_duration = isodate.parse_duration(time_duration)
+                    time_duration = time_duration.total_seconds()
+
 
                 # Add each entry total as new TimeEntry
                 temp_time_entry = TimeEntry(entry_id, entry_date, clock_in, clock_out, pay_code, status_code, time_duration)
