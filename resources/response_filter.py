@@ -425,7 +425,9 @@ class DataParser:
         time_duration = 0
         
         # entry_id
-        entry_id = time_entries_dict["entryID"]
+        entry_id_with_bar = time_entries_dict["entryID"]
+        # Remove the bar and any characters after it
+        entry_id = entry_id_with_bar.split('|')[0]
 
         # entry_date
         if "entryDate" in time_entries_dict.keys():
