@@ -60,50 +60,6 @@ def insert_data(data):
         session.close()
 
 
-def disable_timecard_trigger(trigger_name, table_name):
-    db = Database()
-    engine = db.create_engine()
-    # connection = engine.connect()
-
-    try:
-        print(f'DISABLE TRIGGER {trigger_name} ON {table_name}')
-        with engine.connect() as connection:
-            connection.execute(text(f'DISABLE TRIGGER {trigger_name} ON {table_name}'))
-        # # Disable trigger
-        # connection.execute(f'DISABLE TRIGGER {trigger_name} ON {table_name}')
-        #
-        # # Commit changes
-        # connection.commit()
-    except Exception as e:
-        logging.error(f"An error occurred while disabling trigger.\nError: {str(e)}\n")
-        raise
-    finally:
-        # Close connection
-        connection.close()
-
-
-def enable_timecard_trigger(trigger_name, table_name):
-    db = Database()
-    engine = db.create_engine()
-    # connection = engine.connect()
-
-    try:
-        print(f'ENABLE TRIGGER {trigger_name} ON {table_name}')
-        with engine.connect() as connection:
-            connection.execute(text(f'ENABLE TRIGGER {trigger_name} ON {table_name}'))
-        # # Disable trigger
-        # connection.execute(f'DISABLE TRIGGER {trigger_name} ON {table_name}')
-        #
-        # # Commit changes
-        # connection.commit()
-    except Exception as e:
-        logging.error(f"An error occurred while disabling trigger.\nError: {str(e)}\n")
-        raise
-    finally:
-        # Close connection
-        connection.close()
-
-
 def call_stored_procedure(schema, procedure_name):
     """
     Calls the specified stored procedure using the current database engine.
