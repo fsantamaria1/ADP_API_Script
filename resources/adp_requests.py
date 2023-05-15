@@ -64,7 +64,7 @@ class APIConnector:
     Class for connecting to the ADP API and retrieving data.
     """
 
-    def __init__(self, full_certificate: tuple[str, str], base_64_credentials: str):
+    def __init__(self, full_certificate: tuple, base_64_credentials):
         """
         Initializes the class with the provided certificate.
         :param full_certificate: The certificate to use for the API requests.
