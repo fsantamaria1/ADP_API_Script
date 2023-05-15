@@ -5,6 +5,7 @@ import os
 from resources.response_filter import ResponseFilter
 from resources.models import UnnormalizedEmployees, UnnormalizedTimecards
 from resources.database_functions import *
+from resources.date_util import DateUtil
 
 
 def encode_credentials(client_id, client_secret):
@@ -65,9 +66,12 @@ def main():
         os.environ.get('emp_procedure_4')
     ])
 
+    # Get list of the last three mondays
+    list_of_dates = DateUtil.get_mondays(3)
+
     # # Get time cards and insert them into the Unnormalized table
     # Can provide YYYY-MM-DD or ['YYYY-MM-DD', 'YYYY-MM-DD', ...]
-    time_cards = get_time_cards(connector, 'YYYY-MM-DD')
+    time_cards = get_time_cards(connector, list_of_dates)
     insert_data(time_cards)
 
     # Call stored procedures to update dependent time card tables
