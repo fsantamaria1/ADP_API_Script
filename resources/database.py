@@ -1,3 +1,4 @@
+import urllib.parse
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -36,8 +37,12 @@ class Database:
         if not password:
             password = Config.SECRET_KEY
 
-        connection_string = f'DRIVER=ODBC Driver 17 for SQL Server;SERVER={server}; DATABASE={database}; UID={username}; PWD={password}'
-        engine = create_engine('mssql+pyodbc:///?odbc_connect=' + connection_string)
+        connection_string = (
+            f'DRIVER=ODBC Driver 17 for SQL Server;'
+            f'SERVER={server};DATABASE={database};UID={username};PWD={password};'
+            f'Encrypt=yes;TrustServerCertificate=yes;'
+        )
+        engine = create_engine('mssql+pyodbc:///?odbc_connect=' + urllib.parse.quote_plus(connection_string))
         return engine
 
     def create_session(self):
