@@ -145,33 +145,44 @@ class APIConnector:
                 'Accept': 'application/json',
                 'Cookie': 'BIGipServerp_dc1_mobile_sor_integratedezlm=3938124043.15395.0000; BIGipServerp_dc2_mobile_apache_sor=3013608203.5377.0000; BIGipServerp_mkplproxy-dc1=1633878283.20480.0000; BIGipServerp_mkplproxy-dc2=670892811.20480.0000; BIGipServerp_dc1_mobile_apache_sor=153042955.5377.0000; Cookie_1=value'
             }
-            while True:
-                time_card_url = self.url_generator.generate_timecard_api_urls(top, skip, start_date, main_associate_id)
-                with requests.request(
-                        "GET",
-                        url=time_card_url,
-                        headers=headers,
-                        data=self.payload,
-                        cert=self.certificate
-                ) as response:
+            complete = False
+            while not complete:
 
-                    if response.status_code == 200:
-                        response_text = json.loads(response.text)
-                        complete_indicator = response_text.get("meta").get("completeIndicator")
+                retries = 5
+                while retries > 0:
+                    time_card_url = self.url_generator.generate_timecard_api_urls(top, skip, start_date, main_associate_id)
+                    with requests.request(
+                            "GET",
+                            url=time_card_url,
+                            headers=headers,
+                            data=self.payload,
+                            cert=self.certificate
+                    ) as response:
 
-                        if complete_indicator:
-                            return list_of_time_cards
+                        if response.status_code == 200:
+                            response_text = json.loads(response.text)
+                            complete_indicator = response_text.get("meta").get("completeIndicator")
 
-                        list_of_time_cards.append(response_text)
-                        # Change the range of pages
-                        skip += 25
+                            if complete_indicator:
+                                complete = True
+                                break
 
-                    else:
-                        response.raise_for_status()
+                            list_of_time_cards.append(response_text)
+                            # Change the range of pages
+                            skip += 25
+
+                            # time.sleep(10)
+
+                        else:
+                            print(f"Error: {response.status_code}, Retrying again in 5 seconds ")
+                            retries -= 1
+                            # Wait 5 seconds before making another call
+                            time.sleep(5)
 
         except Exception as e:
             logging.error(f"An error occurred while retrieving time cards.\n Error: {str(e)}\n")
             raise
+        return list_of_time_cards
 
     def get_employees(self):
         """
