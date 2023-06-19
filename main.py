@@ -88,30 +88,5 @@ def main():
     ])
 
 
-def run_script():
-    print("\nRunning...\n")
-
-    start = time.time()
-    print("Start time:", datetime.datetime.fromtimestamp(start).strftime('%H:%M'))
-
-    main()
-
-    end = time.time()
-    print("End time:", datetime.datetime.fromtimestamp(end).strftime('%H:%M'))
-
-    elapsed_time = end - start
-    time_difference = datetime.timedelta(seconds=elapsed_time)
-    print("Elapsed time:", time_difference)
-
-    print("\nDone\n")
-
-
 if __name__ == '__main__':
-
-    # Schedule script to run daily at 10 PM
-    schedule.every().day.at('22:00').do(run_script)
-
-    while True:
-        print("Waiting for scheduled time: 10 PM")
-        schedule.run_pending()
-        time.sleep(30)
+    main()
