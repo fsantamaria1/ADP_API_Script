@@ -30,5 +30,7 @@ if __name__ == '__main__':
 
     while True:
         print(f"Waiting for scheduled time: {time_to_run}")
+        current_time = datetime.datetime.now().strftime('%H:%M:%S')
+        print(f"Current time: {current_time}\n")
         schedule.run_pending()
         time.sleep(30)
