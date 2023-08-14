@@ -6,9 +6,6 @@ from resources.response_filter import ResponseFilter
 from resources.models import UnnormalizedEmployees, UnnormalizedTimecards
 from resources.database_functions import *
 from resources.date_util import DateUtil
-import datetime
-import time
-import schedule
 
 
 def encode_credentials(client_id, client_secret):
@@ -86,6 +83,10 @@ def main():
         os.environ.get('tc_procedure_5'),
         os.environ.get('tc_procedure_6')
     ])
+
+    # Call the stored procedure to update the pay periods table
+    update_dependent_tables(os.environ.get('digital_timesheet_schema'),
+                            [os.environ.get('dts_procedure_1')])
 
 
 if __name__ == '__main__':
