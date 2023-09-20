@@ -67,7 +67,7 @@ def main():
     ])
 
     # Get list of the last three mondays
-    list_of_dates = DateUtil.get_mondays(3)
+    list_of_dates = DateUtil.get_mondays(4)
 
     # # Get time cards and insert them into the Unnormalized table
     # Can provide YYYY-MM-DD or ['YYYY-MM-DD', 'YYYY-MM-DD', ...]
