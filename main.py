@@ -1,11 +1,17 @@
-from resources.adp_requests import APIConnector
 import base64
-from dotenv import load_dotenv
 import os
+from os.path import dirname, join
+from dotenv import load_dotenv
+from resources.adp_requests import APIConnector
 from resources.response_filter import ResponseFilter
 from resources.models import UnnormalizedEmployees, UnnormalizedTimecards
-from resources.database_functions import *
 from resources.date_util import DateUtil
+from resources.database_functions import (
+    call_stored_procedure,
+    create_tables,
+    insert_data,
+    delete_records,
+)
 
 
 def encode_credentials(client_id, client_secret):
@@ -35,15 +41,19 @@ def get_time_cards(connector, date_list):
 
 
 def main():
+    """
+    Runs the main script to get 4 weeks of time cards and insert them into the staging tables
+    """
     # Load environment variables
-    load_dotenv()
+    dotenv_path = join(dirname(__file__), '.env')
+    load_dotenv(dotenv_path)
 
     # Encode client ID and client secret and convert to Base64
-    base64_credentials = encode_credentials(os.environ.get('client_id'), os.environ.get('client_secret'))
+    b64_creds = encode_credentials(os.environ.get('client_id'), os.environ.get('client_secret'))
 
     # Create APIConnector class object to get all the necessary responses
     certificate = (os.environ.get('cert_file_path'), os.environ.get('key_file_path'))
-    connector = APIConnector(certificate, base64_credentials)
+    connector = APIConnector(certificate, b64_creds)
 
     # Create non-normalized tables if they don't exist
     create_tables(UnnormalizedEmployees)
