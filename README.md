@@ -73,6 +73,17 @@ python run.py
 
 The script will run in the background and execute at the scheduled time every day until stopped.
 
+You can run the GUI version by executing this command:
+```
+python simple_ui.py
+```
+
+Additionally, you can create an executable of the GUI version of the script by running the following command:
+
+```
+python build_simple_ui.py
+```
+
 ## Project Structure
 
 The project structure is organized as follows:
@@ -81,7 +92,10 @@ The project structure is organized as follows:
 ADP_API_Script/
   |- main.py
   |- run.py
+  |- simple_ui.py
+  |- build_simple_ui.py
   |- requirements.txt
+  |- .env
   |- .env.example
   |- resources/
       |- adp_requests.py
@@ -95,6 +109,8 @@ ADP_API_Script/
 
 - `main.py`: Contains the main logic for fetching and processing data from the ADP API.
 - `run.py`: Entry point script to schedule the main script to run at a specific time.
+- `simple_ui.py`: Contains the tkinter code to run the GUI version.
+- `build_simple_ui.py`: Provides functionality to create an executable of the `simple_ui.py`.
 - `requirements.txt`: List of Python dependencies required by the project.
 - `.env.example`: Example file for setting up the environment variables. Rename it to `.env` and update the values accordingly.
 - `resources/`: Directory containing various modules used by the main script:
