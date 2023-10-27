@@ -4,3 +4,5 @@ SQLAlchemy~=2.0.9
 requests~=2.28.2
 isodate~=0.6.1
 pyodbc~=4.0.39
+
+#Also needs Microsoft ODBC Driver 17 for SQL Server
