@@ -160,21 +160,22 @@ class APIConnector:
                     ) as response:
 
                         if response.status_code == 200:
-                            response_text = json.loads(response.text)
-                            complete_indicator = response_text.get("meta").get("completeIndicator")
 
+                            # Get the response and append it to the list of timecards
+                            response_text = json.loads(response.text)
+                            list_of_time_cards.append(response_text)
+
+                            # Check if that was the last one and break the loop
+                            complete_indicator = response_text.get("meta").get("completeIndicator")
                             if complete_indicator:
                                 complete = True
                                 break
 
-                            list_of_time_cards.append(response_text)
                             # Change the range of pages
                             skip += 25
 
-                            # time.sleep(10)
-
                         else:
-                            print(f"Error: {response.status_code}, Retrying again in 5 seconds ")
+                            logging.error(f"Error: {response.status_code}, Retrying again in 5 seconds ")
                             retries -= 1
                             # Wait 5 seconds before making another call
                             time.sleep(5)
