@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime, Boolean, Time, Interval
+from sqlalchemy import Column, Integer, String, Date, DateTime, Boolean
+from sqlalchemy.types import DECIMAL
 from resources.database import Database
 import os
 
@@ -23,6 +24,7 @@ class UnnormalizedEmployees(db.Base):
     is_active = Column(Boolean)
     ce_code = Column(String(10), index=True)
     ce_department = Column(String(15))
+    hourly_rate = Column(DECIMAL(10,2))
 
 
 class UnnormalizedTimecards(db.Base):
@@ -47,4 +49,3 @@ class UnnormalizedTimecards(db.Base):
     entry_status_code = Column(String(25))
     pay_code = Column(String(20))
     time_duration = Column(Integer)
-
