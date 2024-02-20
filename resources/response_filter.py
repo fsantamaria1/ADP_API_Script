@@ -19,7 +19,7 @@ class Employee:
     worker_status = ""
     is_active = False
     termination_date = None
-    hourly_rate = 0.0
+    hourly_rate = None
 
     def __init__(self, associate_oid, worker_id, payroll_name, first_name, last_name, middle_name, 
                 location_code, loc_desc, dept_code, dept_desc, ce_name, ce_dept,
@@ -193,7 +193,7 @@ class DataParser:
         ce_dept = ""
         termination_date = ""
         worker_status = ""
-        hourly_rate = 0.0
+        hourly_rate = None
 
         # associate_id
         if "associateOID" in worker_dict:
@@ -262,13 +262,6 @@ class DataParser:
                         if "hourlyRateAmount" in base_remuneration_dict:
                             if "amountValue" in base_remuneration_dict["hourlyRateAmount"]:
                                 hourly_rate = base_remuneration_dict["hourlyRateAmount"]["amountValue"]
-                        
-                    # hourly rate not found in base Remuneration
-                    if hourly_rate == 0.0 and "additionalRemunerations" in work_assignment:
-                        for remuneration in work_assignment["additionalRemunerations"]:
-                            if "rate" in remuneration:
-                                if "amountValue" in remuneration["rate"]:
-                                    hourly_rate = remuneration["rate"]["amountValue"]
 
         # ce_name, ce_dept
         if "customFieldGroup" in worker_dict:
