@@ -113,7 +113,7 @@ class Timecard:
                                     clock_in=self.clock_in,
                                     clock_out=self.clock_out,
                                     entry_status_code=self.entry_status_code,
-                                    pay_code_name=self.pay_code_name,
+                                    pay_code=self.pay_code_name,
                                     time_duration=self.time_duration
             )
 
