@@ -1,6 +1,7 @@
 import json
 from datetime import date, datetime, timedelta, timezone
 from resources.models import UnnormalizedEmployees, UnnormalizedTimecards
+import isodate
 
 
 class Employee:
@@ -463,6 +464,8 @@ class DataParser:
                         pay_code = entry_total["payCode"]["codeValue"]
                 if "timeDuration" in entry_total.keys():
                     time_duration = entry_total["timeDuration"]
+                    time_duration = isodate.parse_duration(time_duration)
+                    time_duration = time_duration.total_seconds()
 
                 # Add each entry total as new TimeEntry
                 temp_time_entry = TimeEntry(entry_id, entry_date, clock_in, clock_out, pay_code, status_code, time_duration)
@@ -480,4 +483,3 @@ class DataParser:
         #            exceptions.append(each_exception["exceptionDescription"])
 
         return time_entry_list
-        
