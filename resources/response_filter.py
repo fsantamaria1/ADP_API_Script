@@ -1,4 +1,3 @@
-import json
 from datetime import date, datetime, timedelta, timezone
 from resources.models import UnnormalizedEmployees, UnnormalizedTimecards
 import isodate
@@ -129,7 +128,7 @@ class ResponseFilter:
     @staticmethod
     def get_employees(response_list):
         """
-        Returns a list of Unnormalized Employees
+        Returns a list of Denormalized Employees
         response_list is a list of "workers" lists from an api response. 
         """
 
@@ -145,12 +144,12 @@ class ResponseFilter:
 
     # Employees /\
 
-    # Timecards \/
+    # Time cards \/
 
     @staticmethod
     def get_timecards(response_list):
         """
-        Returns a list of Unnormalized Timecards
+        Returns a list of Denormalized Time cards
         response_list is a list of dictionaries containing the "teamTimeCards" list
         """
 
@@ -169,7 +168,7 @@ class ResponseFilter:
 
 
 
-    # Timecards /\
+    # Time cards /\
 
 
 class DataParser:
@@ -177,7 +176,7 @@ class DataParser:
     @staticmethod
     def filter_each_worker(worker_dict : dict):
         """
-        Used internaly
+        Used internally
         """
 
         associate_id = ""
@@ -340,7 +339,7 @@ class DataParser:
     @staticmethod
     def create_timecard_list(response_timecard: dict):
         """
-        Used internaly
+        Used internally
         Filters a timecard dictionary to return a Timecard list
         response_timecard is a dictionary from the "teamTimeCard" list
         """
@@ -353,7 +352,7 @@ class DataParser:
     @staticmethod
     def filter_timecard(timecard_dict: dict):
         """
-        Used internaly
+        Used internally
         Filters the "timeCards" list within a single item of "teamTimeCards"
         Returns a list 
         """
@@ -391,15 +390,15 @@ class DataParser:
             if "endDate" in time_period_dict.keys():
                 pay_period_end = date.fromisoformat(time_period_dict["endDate"])
 
-        # Create TimeEntrys and Timecards
+        # Create TimeEntries and Time cards
         if "dayEntries" in timecard_dict.keys():
             for day_entry in timecard_dict["dayEntries"]:
                 if "timeEntries" in day_entry.keys():
                     for time_entry in day_entry["timeEntries"]:
                         # TimeEntry List
-                        time_entrys = DataParser.filter_time_entries(time_entry)
+                        time_entries = DataParser.filter_time_entries(time_entry)
 
-                        for each_time_entry in time_entrys:
+                        for each_time_entry in time_entries:
                             temp_timecard = Timecard(timecard_id, associate_id, pay_period_start, pay_period_end, processing_status_code, has_exception, each_time_entry)
 
                             # Turn Timecard into db model
@@ -419,7 +418,7 @@ class DataParser:
     @staticmethod
     def filter_time_entries(time_entries_dict: dict):
         """
-        Used internaly
+        Used internally
         Filters an item from "timeEntries"
         Returns a list of timeEntries
         """
@@ -458,7 +457,7 @@ class DataParser:
                 status_code = time_entries_dict["entryStatusCode"]["codeValue"]
 
         # pay_code and time_duration
-        # it"s inside a list. Things might get messy if people work on a vacation day.
+        # it's inside a list. Things might get messy if people work on a vacation day.
         if "entryTotals" in time_entries_dict.keys():
             for entry_total in time_entries_dict["entryTotals"]:
                 if "payCode" in entry_total.keys():
