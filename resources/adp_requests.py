@@ -64,7 +64,7 @@ class APIConnector:
     Class for connecting to the ADP API and retrieving data.
     """
 
-    def __init__(self, full_certificate: tuple, base_64_credentials):
+    def __init__(self, full_certificate: tuple[str:str], base_64_credentials):
         """
         Initializes the class with the provided certificate.
         :param full_certificate: The certificate to use for the API requests.
@@ -80,6 +80,7 @@ class APIConnector:
         self.token_api_endpoint = "https://accounts.adp.com/auth/oauth/v2/token?grant_type=client_credentials"
         self.api_host = "api.adp.com"
         self.url_generator = URLGenerator()
+        self.session = requests.Session()
 
     def get_token(self):
         """
@@ -92,12 +93,13 @@ class APIConnector:
             headers = {
                 'Authorization': f'Basic {self.base64_credentials}'
             }
-            response = requests.request("POST",
-                                        url=self.token_api_endpoint,
-                                        headers=headers,
-                                        data=self.payload,
-                                        files=self.files,
-                                        cert=self.certificate)
+            response = self.session.post(
+                url=self.token_api_endpoint,
+                headers=headers,
+                data=self.payload,
+                files=self.files,
+                cert=self.certificate
+            )
 
             # Parse the response to get the token
             bearer_token_response = json.loads(response.text)
@@ -151,8 +153,7 @@ class APIConnector:
                 retries = 5
                 while retries > 0:
                     time_card_url = self.url_generator.generate_timecard_api_urls(top, skip, start_date, main_associate_id)
-                    with requests.request(
-                            "GET",
+                    with self.session.get(
                             url=time_card_url,
                             headers=headers,
                             data=self.payload,
@@ -206,12 +207,11 @@ class APIConnector:
             }
             while True:
                 employee_url = self.url_generator.generate_employee_api_urls(top, skip)
-                with requests.request(
-                        "GET",
-                        url=employee_url,
-                        headers=headers,
-                        data=self.payload,
-                        cert=self.certificate
+                with self.session.get(
+                    url=employee_url,
+                    headers=headers,
+                    data=self.payload,
+                    cert=self.certificate
                 ) as response:
 
                     if response.status_code == 200:
