@@ -1,8 +1,19 @@
+"""
+This module contains the main function for the application.
+"""
 from tkinter import ttk
 import tkinter as tk
 from tkinter import messagebox
 import threading
+import os
+import sys
 from main import main
+
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
 
 
 class MainApplication(tk.Frame):
@@ -41,13 +52,10 @@ class MainApplication(tk.Frame):
     def button_clicked(self):
         """
             Event handler for when the user clicks on the "Run Script" button.
-            Disables the button and displays a "Please wait" message box while the main function runs.
+            Disables the button, displays a "Please wait" message box, and runs the main function.
         """
         # Disable the button to prevent multiple runs
         self.run_button.config(state=tk.DISABLED)
-
-        # Hide the root window
-        self.parent.withdraw()
 
         # Display a "Please wait" message box
         self.wait_message = tk.Toplevel(self.parent)
@@ -59,6 +67,9 @@ class MainApplication(tk.Frame):
 
         wait_label = ttk.Label(self.wait_message, text="Please wait...")
         wait_label.pack(padx=20, pady=10)
+
+        # Set focus on the "Please wait" window and make it modal
+        self.wait_message.grab_set()
 
         # Create a thread to run the main() function
         progress_thread = threading.Thread(target=self.run_main)
@@ -88,4 +99,9 @@ class MainApplication(tk.Frame):
 if __name__ == '__main__':
     root = tk.Tk()
     MainApplication(root).pack(side="top", fill="both", expand=True)
+
+    # Set the icon for the root window
+    icon = resource_path("clock.ico")
+    root.iconbitmap(default=icon)
+
     root.mainloop()
