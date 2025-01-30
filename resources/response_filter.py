@@ -20,10 +20,12 @@ class Employee:
     is_active = False
     termination_date = None
     hourly_rate = None
+    personal_email = None
+    work_email = None
 
     def __init__(self, associate_oid, worker_id, payroll_name, first_name, last_name, middle_name, 
                 location_code, loc_desc, dept_code, dept_desc, ce_name, ce_dept,
-                worker_status, termination_date, hourly_rate):
+                worker_status, termination_date, hourly_rate, personal_email, work_email):
         self.associate_oid = associate_oid
         self.worker_id = worker_id
         self.payroll_name = payroll_name
@@ -38,6 +40,8 @@ class Employee:
         self.ce_dept = ce_dept
         self.worker_status = worker_status
         self.hourly_rate = hourly_rate
+        self.personal_email = personal_email
+        self.work_email = work_email
         if termination_date != "":
             self.termination_date = datetime.strptime(termination_date, "%Y-%m-%d")
             if self.termination_date > datetime.today() - timedelta(days = 15):
@@ -46,12 +50,12 @@ class Employee:
             self.is_active = True
 
     def __str__(self) -> str:
-        out_string = "{0} \t {1} \t {2}, {3}, {4} \n   {5}, {6} \t {7}, {8} \n   {9}, {10}, {11}".format(self.associate_oid, self.payroll_name, self.first_name, self.last_name, self.middle_name,
-        self.location_code, self.loc_desc, self.dept_code, self.dept_desc, self.ce_name, self.ce_dept, self.hourly_rate)
+        out_string = "{0} \t {1} \t {2}, {3}, {4} \n   {5}, {6} \t {7}, {8} \n   {9}, {10}, {11}, \n {12}, {13}".format(self.associate_oid, self.payroll_name, self.first_name, self.last_name, self.middle_name,
+        self.location_code, self.loc_desc, self.dept_code, self.dept_desc, self.ce_name, self.ce_dept, self.hourly_rate, self.personal_email, self.work_email)
         
-        if self.termination_date != None:
-            out_string = "{0} \t {1} \t {2}, {3}, {4} \n   {5}, {6} \t {7}, {8} \n   {9}, {10} \t {11}, {12}".format(self.associate_oid, self.payroll_name, self.first_name, self.last_name, self.middle_name,
-            self.location_code, self.loc_desc, self.dept_code, self.dept_desc, self.ce_name, self.ce_dept, self.termination_date, self.is_active)
+        if self.termination_date is not None:
+            out_string = "{0} \t {1} \t {2}, {3}, {4} \n   {5}, {6} \t {7}, {8} \n   {9}, {10} \t {11}, {12}, \n {13}, {14}".format(self.associate_oid, self.payroll_name, self.first_name, self.last_name, self.middle_name,
+            self.location_code, self.loc_desc, self.dept_code, self.dept_desc, self.ce_name, self.ce_dept, self.termination_date, self.is_active, self.personal_email, self.work_email)
         return out_string
         
     def __UnnormalizedEmployees__(self) -> UnnormalizedEmployees:
@@ -60,7 +64,8 @@ class Employee:
                                     location_code=self.location_code, location_description=self.loc_desc,
                                     department_code=self.dept_code, department_description=self.dept_desc,
                                     worker_status=self.worker_status, is_active=self.is_active,
-                                    ce_code=self.ce_name, ce_department=self.ce_dept, hourly_rate=self.hourly_rate)
+                                    ce_code=self.ce_name, ce_department=self.ce_dept, hourly_rate=self.hourly_rate,
+                                    work_email=self.work_email, personal_email=self.personal_email)
 
 
 class TimeEntry:
@@ -194,6 +199,8 @@ class DataParser:
         termination_date = ""
         worker_status = ""
         hourly_rate = None
+        personal_email = None
+        work_email = None
 
         # associate_id
         if "associateOID" in worker_dict:
@@ -220,6 +227,17 @@ class DataParser:
 
                 if "middleName" in legal_name_dict:
                     middle_name = legal_name_dict["middleName"]
+
+        # personal_email
+        if worker_dict["person"].get("communication") is not None:
+            if "emails" in worker_dict["person"]["communication"]:
+                personal_email = worker_dict["person"]["communication"]["emails"][0]["emailUri"]
+        # work_email
+        if "businessCommunication" in worker_dict:
+            if "emails" in worker_dict["businessCommunication"]:
+                work_email = worker_dict["businessCommunication"]["emails"][0]["emailUri"]
+
+        print(payroll_name, personal_email, work_email, "\n")
 
         # worker_status
         if "workerStatus" in worker_dict:
@@ -280,7 +298,8 @@ class DataParser:
                 termination_date = worker_dict["workerDates"]["terminationDate"]
 
         return Employee(associate_id, worker_id, payroll_name, first_name, last_name, middle_name, location_code, 
-                         loc_desc, dept_code, dept_desc, ce_name, ce_dept, worker_status, termination_date, hourly_rate)
+                         loc_desc, dept_code, dept_desc, ce_name, ce_dept, worker_status, termination_date, hourly_rate,
+                         personal_email, work_email)
 
     @staticmethod
     def get_location_code(location_name_code_dict: dict):
