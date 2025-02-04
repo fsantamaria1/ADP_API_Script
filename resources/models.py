@@ -25,6 +25,8 @@ class UnnormalizedEmployees(db.Base):
     ce_code = Column(String(10), index=True)
     ce_department = Column(String(15))
     hourly_rate = Column(DECIMAL(10,2))
+    work_email = Column(String(100))
+    personal_email = Column(String(100))
 
 
 class UnnormalizedTimecards(db.Base):
